@@ -1,31 +1,73 @@
 import numpy as np
 import pandas as pd
-from data.RL_data.trend_analysis import TrendAnalyzer
-
-def test_trend_analyzer():
-    """测试函数"""
-    # 生成测试数据
-    np.random.seed(42)
-    dates = pd.date_range("2023-01-01", periods=100, freq="D")
-    base_price = np.linspace(100, 120, 100)  # 上升趋势
-    noise = np.random.normal(0, 2, 100)
-    close_prices = base_price + noise
+from data.RL_data.build_dataset import DatasetBuilder
+from logger.logging_config import logger
+def main():
+    # 示例用法
+    builder = DatasetBuilder(
+        market='zh',
+        source='baostock',
+        codes=['000001'],  # 示例股票代码
+        input_window=60,
+        output_window=20,
+        train_ratio=1,
+        start_date='20050101',
+        end_date='20200101'
+    )
     
-    df_test = pd.DataFrame({
-        "date": dates,
-        "close": close_prices
-    })
-    
-    # 分析趋势
-    analyzer = TrendAnalyzer()
-    trend, pivots = analyzer.analyze_stock_trend(df_test)
-    
-    print("趋势分析结果:")
-    print(f"当前趋势: {trend}")
-    print("\n关键枢纽点:")
-    for p in pivots:
-        print(f"位置: {p['index']}, 价格: {p['price']:.2f}, 类型: {p['type']}")
+    dataset = builder.build()
+    if dataset:
+        logger.info('\n数据集示例:')
+        # 打印训练集信息
+        logger.info(f'训练集特征形状: {dataset["train"]["X"].shape}')
+        logger.info(f'训练集标签形状: {dataset["train"]["y"].shape}')
 
+        
+        # 打印训练集标签分布
+        train_label_dist = np.bincount(dataset["train"]["y"])
+        logger.info('\n训练集标签分布:')
+        logger.info(f'- 下跌趋势 (0): {train_label_dist[0]} 个样本')
+        logger.info(f'- 震荡趋势 (1): {train_label_dist[1]} 个样本')
+        logger.info(f'- 上涨趋势 (2): {train_label_dist[2]} 个样本')
+        
+        # 打印验证集信息
+        logger.info(f'\n验证集特征形状: {dataset["val"]["X"].shape}')
+        logger.info(f'验证集标签形状: {dataset["val"]["y"].shape}')
 
-if __name__ == "__main__":
-    test_trend_analyzer() 
+        
+      
+    
+    builder = DatasetBuilder(
+        market='zh',
+        source='baostock',
+        codes=['000001'],  # 示例股票代码
+        input_window=60,
+        output_window=20,
+        train_ratio=1,
+        start_date='20200101',
+        end_date='20250101'
+    )
+    
+    dataset = builder.build()
+    if dataset:
+        logger.info('\n数据集示例:')
+        # 打印训练集信息
+        logger.info(f'训练集特征形状: {dataset["train"]["X"].shape}')
+        logger.info(f'训练集标签形状: {dataset["train"]["y"].shape}')
+
+        
+        # 打印训练集标签分布
+        train_label_dist = np.bincount(dataset["train"]["y"])
+        logger.info('\n训练集标签分布:')
+        logger.info(f'- 下跌趋势 (0): {train_label_dist[0]} 个样本')
+        logger.info(f'- 震荡趋势 (1): {train_label_dist[1]} 个样本')
+        logger.info(f'- 上涨趋势 (2): {train_label_dist[2]} 个样本')
+        
+        # 打印验证集信息
+        logger.info(f'\n验证集特征形状: {dataset["val"]["X"].shape}')
+        logger.info(f'验证集标签形状: {dataset["val"]["y"].shape}')
+
+        
+
+if __name__ == '__main__':
+    main()
